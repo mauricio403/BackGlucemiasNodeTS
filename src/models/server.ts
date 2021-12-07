@@ -3,6 +3,7 @@ import cors from 'cors';
 import authRoutes from '../routes/authRoutes';
 import { dbConnection } from '../database/config';
 import { routerUsers } from '../routes/usuariosRoutes';
+import { sheetsRouter } from '../routes/sheetsRoutes';
 
 class Server {
 
@@ -11,6 +12,7 @@ class Server {
     private apiPaths = {
         authentication:'/api/auth',
         usuarios:   '/api/usuarios',
+        sheets:   '/api/sheets',
     }
 
     constructor() {
@@ -45,6 +47,7 @@ class Server {
     routes() {
         this.app.use(this.apiPaths.authentication, authRoutes);
         this.app.use(this.apiPaths.usuarios, routerUsers);
+        this.app.use(this.apiPaths.sheets, sheetsRouter);
     }
 
 }

@@ -17,11 +17,13 @@ const cors_1 = __importDefault(require("cors"));
 const authRoutes_1 = __importDefault(require("../routes/authRoutes"));
 const config_1 = require("../database/config");
 const usuariosRoutes_1 = require("../routes/usuariosRoutes");
+const sheetsRoutes_1 = require("../routes/sheetsRoutes");
 class Server {
     constructor() {
         this.apiPaths = {
             authentication: '/api/auth',
             usuarios: '/api/usuarios',
+            sheets: '/api/sheets',
         };
         this.app = (0, express_1.default)();
         this.port = process.env.PORT || '8002';
@@ -48,6 +50,7 @@ class Server {
     routes() {
         this.app.use(this.apiPaths.authentication, authRoutes_1.default);
         this.app.use(this.apiPaths.usuarios, usuariosRoutes_1.routerUsers);
+        this.app.use(this.apiPaths.sheets, sheetsRoutes_1.sheetsRouter);
     }
 }
 exports.default = Server;

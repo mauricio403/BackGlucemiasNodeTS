@@ -5,7 +5,7 @@ import { dbConnection } from '../database/config';
 import { routerUsers } from '../routes/usuariosRoutes';
 import { sheetsRouter } from '../routes/sheetsRoutes';
 import { validarJWT } from '../middlewares/validar-jwt';
-import { SpreadSheetContainer } from "../googleSpreadSheet/SpreadSheetContainer";
+import { SpreadSheetContainer } from "./googleSpreadSheet/SpreadSheetContainer";
 
 class Server {
 
@@ -29,8 +29,7 @@ class Server {
     async initSpreadSheets() {
         const spreadSheetcontainer = SpreadSheetContainer.getInstance();
         const doc1 = await spreadSheetcontainer
-            .newDoc('1s3-nyOFuUzLSNEfsIzf5Biq5sCKMu0YFp98EH2uhEaY');
-        // console.log(doc1.title);
+            .newDoc('1s3-nyOFuUzLSNEfsIzf5Biq5sCKMu0YFp98EH2uhEaY', 'december');
     }
 
 

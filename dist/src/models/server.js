@@ -19,7 +19,7 @@ const config_1 = require("../database/config");
 const usuariosRoutes_1 = require("../routes/usuariosRoutes");
 const sheetsRoutes_1 = require("../routes/sheetsRoutes");
 const validar_jwt_1 = require("../middlewares/validar-jwt");
-const SpreadSheetContainer_1 = require("../googleSpreadSheet/SpreadSheetContainer");
+const SpreadSheetContainer_1 = require("./googleSpreadSheet/SpreadSheetContainer");
 class Server {
     constructor() {
         this.apiPaths = {
@@ -38,8 +38,7 @@ class Server {
         return __awaiter(this, void 0, void 0, function* () {
             const spreadSheetcontainer = SpreadSheetContainer_1.SpreadSheetContainer.getInstance();
             const doc1 = yield spreadSheetcontainer
-                .newDoc('1s3-nyOFuUzLSNEfsIzf5Biq5sCKMu0YFp98EH2uhEaY');
-            // console.log(doc1.title);
+                .newDoc('1s3-nyOFuUzLSNEfsIzf5Biq5sCKMu0YFp98EH2uhEaY', 'december');
         });
     }
     conectarDB() {

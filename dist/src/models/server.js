@@ -18,6 +18,8 @@ const authRoutes_1 = __importDefault(require("../routes/authRoutes"));
 const config_1 = require("../database/config");
 const usuariosRoutes_1 = require("../routes/usuariosRoutes");
 const sheetsRoutes_1 = require("../routes/sheetsRoutes");
+const validar_jwt_1 = require("../middlewares/validar-jwt");
+const SpreadSheetContainer_1 = require("../googleSpreadSheet/SpreadSheetContainer");
 class Server {
     constructor() {
         this.apiPaths = {
@@ -30,6 +32,15 @@ class Server {
         this.conectarDB();
         this.middlewares();
         this.routes();
+        this.initSpreadSheets();
+    }
+    initSpreadSheets() {
+        return __awaiter(this, void 0, void 0, function* () {
+            const spreadSheetcontainer = SpreadSheetContainer_1.SpreadSheetContainer.getInstance();
+            const doc1 = yield spreadSheetcontainer
+                .newDoc('1s3-nyOFuUzLSNEfsIzf5Biq5sCKMu0YFp98EH2uhEaY');
+            // console.log(doc1.title);
+        });
     }
     conectarDB() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -49,7 +60,7 @@ class Server {
     }
     routes() {
         this.app.use(this.apiPaths.authentication, authRoutes_1.default);
-        this.app.use(this.apiPaths.usuarios, usuariosRoutes_1.routerUsers);
+        this.app.use(this.apiPaths.usuarios, [validar_jwt_1.validarJWT], usuariosRoutes_1.routerUsers);
         this.app.use(this.apiPaths.sheets, sheetsRoutes_1.sheetsRouter);
     }
 }

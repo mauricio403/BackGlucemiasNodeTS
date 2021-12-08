@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.updateUsuarios = exports.getUsuarios = void 0;
+exports.showUsuario = exports.deleteUsuarios = exports.updateUsuarios = exports.storeUsuarios = exports.getUsuarios = void 0;
 const Usuario_1 = __importDefault(require("../models/Usuario"));
 const getUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { limite = 5, desde = 0 } = req.query;
@@ -29,6 +29,28 @@ const getUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
     });
 });
 exports.getUsuarios = getUsuarios;
+const storeUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const usuarioId = req.params.id;
+    try {
+        const isThereUser = yield Usuario_1.default.findById(usuarioId);
+        if (isThereUser) {
+            throw new Error("Ya existe un usuario con ese id");
+        }
+        const usuario = yield Usuario_1.default.create(req.body);
+        yield usuario.save();
+        return res.status(201).json({
+            msg: 'Usuario creado correctamente',
+            data: usuario
+        });
+    }
+    catch (error) {
+        return res.status(400).json({
+            ok: false,
+            msg: error
+        });
+    }
+});
+exports.storeUsuarios = storeUsuarios;
 const updateUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const usuarioId = req.params.id;
     try {
@@ -55,4 +77,45 @@ const updateUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.updateUsuarios = updateUsuarios;
+const deleteUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const usuarioId = req.params.id;
+    try {
+        const usuario = yield Usuario_1.default.findById(req.body.usuarioId);
+        if (!usuario) {
+            throw new Error("No existe un usuario con ese id");
+        }
+        yield (usuario === null || usuario === void 0 ? void 0 : usuario.deleteOne());
+        return res.status(200).json({
+            msg: 'OK',
+            data: usuario
+        });
+    }
+    catch (error) {
+        return res.status(400).json({
+            ok: false,
+            msg: error
+        });
+    }
+});
+exports.deleteUsuarios = deleteUsuarios;
+const showUsuario = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const usuarioId = req.params.id;
+    try {
+        const usuario = yield Usuario_1.default.findById(req.body.usuarioId);
+        if (!usuario) {
+            throw new Error("No existe un usuario con ese id");
+        }
+        return res.status(200).json({
+            msg: 'OK',
+            data: usuario
+        });
+    }
+    catch (error) {
+        return res.status(400).json({
+            ok: false,
+            msg: error
+        });
+    }
+});
+exports.showUsuario = showUsuario;
 //# sourceMappingURL=usuariosController.js.map

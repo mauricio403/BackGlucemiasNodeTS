@@ -10,7 +10,7 @@ export interface PayloadData extends Request {
     exp: number
 }
 
-export const validarJWT = (req: PayloadData, res: Response, next: any) => {
+export const validarJWT = (req: Request, res: Response, next: any) => {
 
 
 

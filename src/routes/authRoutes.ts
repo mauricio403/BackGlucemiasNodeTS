@@ -34,6 +34,6 @@ router.post('/login'
     loginUsuario
 );
 
-router.get('/renew',validarJWT, revalidarToken);
+// router.get('/renew',validarJWT, revalidarToken);
 
 export default router;

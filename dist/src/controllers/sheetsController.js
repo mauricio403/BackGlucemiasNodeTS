@@ -17,19 +17,12 @@ const storeRow = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
         const row = req.body.row;
         const month = req.body.month;
         const container = SpreadSheetContainer_1.SpreadSheetContainer.getInstance();
-        console.log('2', container);
         const doc = container.docs[month];
-        console.log('3', doc.title);
-        const sheet = doc.sheetsByIndex[0];
-        console.log('4');
-        const { fecha, ayuno } = row;
-        const newRow = yield sheet.addRow({
-            fecha,
-            ayuno
-        });
-        // console.log('5', newRow);
+        const sheets = doc.sheetsByIndex;
+        const sheet = searchBySheetTitle(sheets, sheetTitle);
+        const newRow = yield sheet.addRow(row);
         return res.json({
-            data: newRow,
+            data: 'ok',
             msg: 'Row added'
         });
     }
@@ -50,14 +43,20 @@ function readRow(req, res) {
     });
 }
 const test = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const container = SpreadSheetContainer_1.SpreadSheetContainer.getInstance().docs;
-    const number = Object.keys(container).length;
-    console.log(number);
-    return res.json(number);
+    const container = SpreadSheetContainer_1.SpreadSheetContainer.getInstance();
+    const doc = container.docs.december;
+    const sheets = doc.sheetsByIndex;
+    const sheet = searchBySheetTitle(sheets, 'Bryan');
+    console.log(sheet);
+    yield sheet.addRow({
+        nombre: 'Bryan',
+        edad: 121
+    });
+    return res.json('ok');
 });
 exports.test = test;
-const searchBySheetTitle = (spreadSheet, title) => {
-    for (const sheet of spreadSheet) {
+const searchBySheetTitle = (spreadSheets, title) => {
+    for (const sheet of spreadSheets) {
         if (sheet._rawProperties.title == title) {
             return sheet;
         }

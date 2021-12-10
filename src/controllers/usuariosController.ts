@@ -1,6 +1,7 @@
-import { Request, Response } from "express";
+import { json, Request, Response } from "express";
 import bcryptjs from 'bcryptjs';
 import Usuario from "../models/Usuario";
+import { generarJWT } from "../helpers/jwt";
 
 
 export const getUsuarios = async (req: Request, res: Response) => {
@@ -24,36 +25,60 @@ export const getUsuarios = async (req: Request, res: Response) => {
 }
 
 export const storeUsuarios = async (req: Request, res: Response) => {
-    const usuarioId = req.params.id;
+    const { dni, password } = (req.body);
+
     try {
-        const isThereUser = await Usuario.findById(usuarioId);
-        if (isThereUser) {
-            throw new Error("Ya existe un usuario con ese id");
 
+        let usuario = await Usuario.findOne({ dni });
+
+        if (usuario) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Ya existe un usuario con ese numero de Cedula / Pasaporte'
+            })
         }
-        const usuario = await Usuario.create(req.body);
-        await usuario.save();
-        return res.status(201).json({
-            msg: 'Usuario creado correctamente',
-            data: usuario
-        });
+        usuario = new Usuario(req.body);
 
-    } catch (error) {
-        return res.status(400).json({
-            ok: false,
-            msg: error
+        //encriptar contraseña
+        const salt = bcryptjs.genSaltSync();
+        usuario.password = bcryptjs.hashSync(password, salt);
+
+        await usuario.save();
+
+        //genera jwt
+        const token = await generarJWT(usuario.id, usuario.dni, usuario.name);
+
+
+        res.status(201).json({
+            usuario: {
+                uid: usuario.id,
+                dni: usuario.dni,
+                name: usuario.name,
+                phone: usuario.phone,
+                rol: usuario.rol,
+                password: usuario.password,
+
+            },
+            token,
+            msg: 'Usuario creado correctamente!'
         });
+    } catch (error) {
+        console.log(error)
+        res.status(500).json({
+            ok: false,
+            msg: 'Por favor hable con el admin'
+        })
     }
 }
 
+
 export const updateUsuarios = async (req: Request, res: Response) => {
 
-    const usuarioId = req.params.id;
+    let dni = parseInt(req.params.id);
 
     try {
 
-        const usuario = await Usuario.findById(usuarioId);
-
+        const usuario = await Usuario.findOne({ dni });
         if (!usuario) {
             res.status(404).json({
                 ok: false,
@@ -66,7 +91,7 @@ export const updateUsuarios = async (req: Request, res: Response) => {
             usuario: usuario?.id
         }
 
-        const usuarioActualizado = await Usuario.findByIdAndUpdate(usuarioId, nuevoUsuario, { new: true });
+        const usuarioActualizado = await Usuario.findOneAndUpdate({ dni }, nuevoUsuario, { new: true });
 
         res.status(200).json({
             msg: 'actualizado exitosamente!',
@@ -85,11 +110,10 @@ export const updateUsuarios = async (req: Request, res: Response) => {
 
 }
 
-export const deleteUsuarios = async (req: Request, res: Response) => {
-    const usuarioId = req.params.id;
-
+export const deleteUsuario = async (req: Request, res: Response) => {
+    let dni = parseInt(req.params.id);
     try {
-        const usuario = await Usuario.findById(req.body.usuarioId);
+        const usuario = await Usuario.findOne({ dni });
         if (!usuario) {
             throw new Error("No existe un usuario con ese id");
         }
@@ -107,12 +131,11 @@ export const deleteUsuarios = async (req: Request, res: Response) => {
 }
 
 export const showUsuario = async (req: Request, res: Response) => {
-    const usuarioId = req.params.id;
-
+    let dni = parseInt(req.params.id);
     try {
-        const usuario = await Usuario.findById(req.body.usuarioId);
+        const usuario = await Usuario.findOne({ dni });
         if (!usuario) {
-            throw new Error("No existe un usuario con ese id");
+            throw new Error("No existe un usuario con ese dni");
         }
         return res.status(200).json({
             msg: 'OK',

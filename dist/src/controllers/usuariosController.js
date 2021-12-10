@@ -12,8 +12,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.showUsuario = exports.deleteUsuarios = exports.updateUsuarios = exports.storeUsuarios = exports.getUsuarios = void 0;
+exports.showUsuario = exports.deleteUsuario = exports.updateUsuarios = exports.storeUsuarios = exports.getUsuarios = void 0;
+const bcryptjs_1 = __importDefault(require("bcryptjs"));
 const Usuario_1 = __importDefault(require("../models/Usuario"));
+const jwt_1 = require("../helpers/jwt");
 const getUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { limite = 5, desde = 0 } = req.query;
     const query = { estado: true };
@@ -30,31 +32,48 @@ const getUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* ()
 });
 exports.getUsuarios = getUsuarios;
 const storeUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const usuarioId = req.params.id;
+    const { dni, password } = (req.body);
     try {
-        const isThereUser = yield Usuario_1.default.findById(usuarioId);
-        if (isThereUser) {
-            throw new Error("Ya existe un usuario con ese id");
+        let usuario = yield Usuario_1.default.findOne({ dni });
+        if (usuario) {
+            return res.status(400).json({
+                ok: false,
+                msg: 'Ya existe un usuario con ese numero de Cedula / Pasaporte'
+            });
         }
-        const usuario = yield Usuario_1.default.create(req.body);
+        usuario = new Usuario_1.default(req.body);
+        //encriptar contraseña
+        const salt = bcryptjs_1.default.genSaltSync();
+        usuario.password = bcryptjs_1.default.hashSync(password, salt);
         yield usuario.save();
-        return res.status(201).json({
-            msg: 'Usuario creado correctamente',
-            data: usuario
+        //genera jwt
+        const token = yield (0, jwt_1.generarJWT)(usuario.id, usuario.dni, usuario.name);
+        res.status(201).json({
+            usuario: {
+                uid: usuario.id,
+                dni: usuario.dni,
+                name: usuario.name,
+                phone: usuario.phone,
+                rol: usuario.rol,
+                password: usuario.password,
+            },
+            token,
+            msg: 'Usuario creado correctamente!'
         });
     }
     catch (error) {
-        return res.status(400).json({
+        console.log(error);
+        res.status(500).json({
             ok: false,
-            msg: error
+            msg: 'Por favor hable con el admin'
         });
     }
 });
 exports.storeUsuarios = storeUsuarios;
 const updateUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const usuarioId = req.params.id;
+    let dni = parseInt(req.params.id);
     try {
-        const usuario = yield Usuario_1.default.findById(usuarioId);
+        const usuario = yield Usuario_1.default.findOne({ dni });
         if (!usuario) {
             res.status(404).json({
                 ok: false,
@@ -62,7 +81,7 @@ const updateUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function*
             });
         }
         const nuevoUsuario = Object.assign(Object.assign({}, req.body), { usuario: usuario === null || usuario === void 0 ? void 0 : usuario.id });
-        const usuarioActualizado = yield Usuario_1.default.findByIdAndUpdate(usuarioId, nuevoUsuario, { new: true });
+        const usuarioActualizado = yield Usuario_1.default.findOneAndUpdate({ dni }, nuevoUsuario, { new: true });
         res.status(200).json({
             msg: 'actualizado exitosamente!',
             usuario: usuarioActualizado
@@ -77,10 +96,10 @@ const updateUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 exports.updateUsuarios = updateUsuarios;
-const deleteUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const usuarioId = req.params.id;
+const deleteUsuario = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    let dni = parseInt(req.params.id);
     try {
-        const usuario = yield Usuario_1.default.findById(req.body.usuarioId);
+        const usuario = yield Usuario_1.default.findOne({ dni });
         if (!usuario) {
             throw new Error("No existe un usuario con ese id");
         }
@@ -97,13 +116,13 @@ const deleteUsuarios = (req, res) => __awaiter(void 0, void 0, void 0, function*
         });
     }
 });
-exports.deleteUsuarios = deleteUsuarios;
+exports.deleteUsuario = deleteUsuario;
 const showUsuario = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const usuarioId = req.params.id;
+    let dni = parseInt(req.params.id);
     try {
-        const usuario = yield Usuario_1.default.findById(req.body.usuarioId);
+        const usuario = yield Usuario_1.default.findOne({ dni });
         if (!usuario) {
-            throw new Error("No existe un usuario con ese id");
+            throw new Error("No existe un usuario con ese dni");
         }
         return res.status(200).json({
             msg: 'OK',
